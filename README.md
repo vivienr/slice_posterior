@@ -16,6 +16,9 @@ Writing 353 points to file output.dat
 Interpolated total mass: 27.2920774447
 ```
 
-And create the `output.dat` file
+And create the `output.dat` file, which can then be plotted using https://github.com/vivienr/plot_posterior
 
-(see the example folder for `aligned_prior.dat` and `output.dat` data files)
+`plot_posterior/plot_posterior.py -p output.dat aligned_prior.dat -n q a1z a2z -o plot.png`
+![plot.png.png](https://github.com/vivienr/slice_posterior/blob/master/example/plot.png)
+
+(see the example folder for `aligned_prior.dat` example input file)
