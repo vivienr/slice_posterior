@@ -4,7 +4,7 @@
 
 Running:
 
-`slice_posterior.py -p aligned_prior.dat -q 2 -chi1 0.5 -chi2 -0.5 -d 0.3 -c 1.0 -o output.dat`
+`slice_posterior.py -p aligned_prior.dat -q 0.7 -a1z 0.5 -a1z -0.5 --Nremaining=100 -c 1.0 -o output.dat`
 
 Will generate the output:
 
