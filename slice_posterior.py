@@ -15,10 +15,12 @@ mass-ratio, a1z, a2z, and (if desired) tilt1 and tilt2 values.
 
 
 
-parser.add_argument('-p', '--posterior', type=str, help='posterior file (ASCII table with one-line header).')
+parser.add_argument('-p', '--posterior', type=str, help='Posterior file (ASCII table with one-line header).')
 
-parser.add_argument('-o', '--output', type=str, nargs='?', help='output file.',
+parser.add_argument('-o', '--output', type=str, nargs='?', help='Output file.',
                     default=None)
+
+parser.add_argument('-l', '--likelihood', action='store_true', help='Use the likelihood instead of the posterior to rank points.')
 
 parser.add_argument('-c', '--credible-interval', type=float, help='Credible interval to use as subset of the posterior.',
                     default=0.9)
@@ -26,7 +28,7 @@ group=parser.add_mutually_exclusive_group(required=True)
 group.add_argument('--delta', type=float, default=None,
                    help='Allowed +/- range around the given mass-ratio, spin1, spin2 values.')
 group.add_argument('--Nremaining', type=int, default=None,
-                    help='Choose a delta such that Nremaining posterior samples remain in sliced posterior')
+                    help='Choose a delta such that Nremaining posterior samples remain in sliced posterior.')
 
 # list of slice-able variables.  This list
 # can be extended as desired
@@ -72,7 +74,12 @@ def Do_Slicing(data, delta):
 org_data=np.genfromtxt(args.posterior, names=True)
 
 # Sort the data in order of increasing logposterior=logprior+loglikelihood
-sorted_data=org_data[np.argsort(org_data['logprior']+org_data['logl'])][::-1]
+if args.likelihood:
+    ranking='likelihood'
+    sorted_data=org_data[np.argsort(org_data['logl'])][::-1]
+else:
+    ranking='posterior'
+    sorted_data=org_data[np.argsort(org_data['logprior']+org_data['logl'])][::-1]
 # Take the top (credible-interval)
 cred_data=sorted_data[0:int(args.credible_interval*len(sorted_data))]
 
@@ -128,16 +135,20 @@ if len(out) == 0:
     print "No sample point found within "+s
     os.sys.exit()
 else:
-    print "Highest posterior point found within "+s
+    print "Highest "+ranking+" point found within "+s
     PrintOnlyExisting(data, ['q', 'a1z', 'a2z', 'tilt1', 'tilt2'])
     print "['mtotal', 'theta_jn', 'distance', 'ra', 'dec', 'psi']={}".format(out[['mtotal', 'theta_jn', 'distance', 'ra', 'dec', 'psi']][0])
     print "['time','h1_end_time','l1_end_time','h1l1_delay']={}".format(out[['time','h1_end_time','l1_end_time','h1l1_delay']][0])
 
-    maxLpost=(data['logprior']+data['logl'])[0]
-    maxLslice=(out['logprior']+out['logl'])[0]
-    print "overall highest logposterior ={}".format(maxLpost)
-    print "highest logposterior in slice={}".format(maxLslice)
-    print "difference in logposterior={}".format(maxLpost-maxLslice)
+    if args.likelihood:
+        maxLpost=(data['logl'])[0]
+        maxLslice=(out['logl'])[0]
+    else:
+        maxLpost=(data['logprior']+data['logl'])[0]
+        maxLslice=(out['logprior']+out['logl'])[0]
+    print "overall highest log"+ranking+" ={}".format(maxLpost)
+    print "highest log"+ranking+" in slice={}".format(maxLslice)
+    print "difference in log"+ranking+"={}".format(maxLpost-maxLslice)
 
 
 if args.output:
